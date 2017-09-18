@@ -6,20 +6,23 @@ package mnist.ai.formigone.com.mnistapp.models;
 
 public class SimpleItem {
     private String label;
+    private String category;
     private boolean active;
 
-    public SimpleItem(String label, boolean active) {
+    public SimpleItem(String label, String category, boolean active) {
         this.label = label;
+        this.category = category;
         this.active = active;
     }
 
-    public SimpleItem(String label) {
+    public SimpleItem(String label, String category) {
         this.label = label;
+        this.category = category;
         this.active = true;
     }
 
     public String toString() {
-        return "{\"label\": " + label + ", \"active\": " + active + "}";
+        return "{\"label\": " + label + ", \"category\": " + category + ", \"active\": " + active + "}";
     }
 
     public String getLabel() {
@@ -30,7 +33,15 @@ public class SimpleItem {
         this.label = label;
     }
 
-    public boolean getActive() {
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public boolean isActive() {
         return active;
     }
 

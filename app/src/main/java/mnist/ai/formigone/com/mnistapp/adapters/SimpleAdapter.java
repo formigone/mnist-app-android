@@ -42,8 +42,8 @@ public class SimpleAdapter extends ArrayAdapter<SimpleItem> {
         if (item != null) {
             Log.v(TAG, "Rendering item: " + item);
             view.setText(item.getLabel());
-            view.setEnabled(item.getActive());
-            view.setClickable(!item.getActive());
+            view.setEnabled(item.isActive());
+            view.setClickable(!item.isActive());
         }
 
         return view;

@@ -28,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ListView listView = (ListView) findViewById(R.id.main_list);
 
-        activityList.add(new SimpleItem("Order Calculator"));
-        activityList.add(new SimpleItem("Canvas", false));
-        activityList.add(new SimpleItem("MNIST App", false));
+        activityList.add(new SimpleItem("Order Calculator", "OrderCalculator"));
+        activityList.add(new SimpleItem("Canvas", "Canvas", false));
+        activityList.add(new SimpleItem("MNIST App", "MNIST", false));
 
         SimpleAdapter listAdapter = new SimpleAdapter(this, activityList, listView);
 
