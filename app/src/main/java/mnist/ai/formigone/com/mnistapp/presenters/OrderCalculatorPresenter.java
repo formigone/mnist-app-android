@@ -8,8 +8,8 @@ import mnist.ai.formigone.com.mnistapp.views.OrderCalculatorView;
  */
 
 public class OrderCalculatorPresenter {
-    OrderCalculatorView view;
-    OrderCalculatorRepository repository;
+    private OrderCalculatorView view;
+    private OrderCalculatorRepository repository;
 
     public OrderCalculatorPresenter(OrderCalculatorView view, OrderCalculatorRepository repository) {
         this.view = view;
