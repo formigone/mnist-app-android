@@ -67,6 +67,7 @@
                 android:theme="@style/App.FormTxt" />
 
             <TextView
+                android:id="@+id/price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
