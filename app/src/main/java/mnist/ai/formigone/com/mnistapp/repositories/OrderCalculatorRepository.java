@@ -6,6 +6,7 @@ package mnist.ai.formigone.com.mnistapp.repositories;
 
 public interface OrderCalculatorRepository {
     public int changeQuantity(int quantity);
+    public void setQuantity(int quantity);
     public int getQuantity();
     public double getPrice();
 }

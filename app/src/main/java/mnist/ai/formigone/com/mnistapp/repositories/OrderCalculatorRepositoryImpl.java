@@ -23,6 +23,11 @@ public class OrderCalculatorRepositoryImpl implements OrderCalculatorRepository 
     }
 
     @Override
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    @Override
     public int getQuantity() {
         return quantity;
     }

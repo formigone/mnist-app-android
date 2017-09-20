@@ -19,6 +19,8 @@ public class OrderCalculatorActivity extends AppCompatActivity implements OrderC
     private TextView priceView;
     private Button minusButton;
 
+    public final static String STATE_KEY_QUANTITY = "quantity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +36,19 @@ public class OrderCalculatorActivity extends AppCompatActivity implements OrderC
         findViewById(R.id.btn_plus).setOnClickListener(this);
 
         presenter.render();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(STATE_KEY_QUANTITY, presenter.getQuantity());
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        int quantity = savedInstanceState.getInt(STATE_KEY_QUANTITY);
+        presenter.setQuantity(quantity);
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override

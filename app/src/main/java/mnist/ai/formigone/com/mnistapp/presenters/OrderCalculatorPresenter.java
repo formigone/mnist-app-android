@@ -23,6 +23,15 @@ public class OrderCalculatorPresenter {
         view.setMinusButtonClickable(quantity > 0);
     }
 
+    public void setQuantity(int quantity) {
+        repository.setQuantity(quantity);
+        render();
+    }
+
+    public int getQuantity() {
+        return repository.getQuantity();
+    }
+
     public void changeQuantity(int quantity) {
         repository.changeQuantity(quantity);
         render();
