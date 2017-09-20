@@ -19,6 +19,10 @@
         <activity
             android:name=".activities.OrderCalculatorActivity"
             android:label="@string/title_activity_order_calculator" />
+        <activity
+            android:name=".activities.CanvasActivity"
+            android:label="@string/title_activity_canvas"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
