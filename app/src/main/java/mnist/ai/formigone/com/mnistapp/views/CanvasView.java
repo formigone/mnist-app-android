@@ -1,6 +1,7 @@
 package mnist.ai.formigone.com.mnistapp.views;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -36,6 +37,7 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
         points = new ArrayList<>();
 
         getHolder().addCallback(this);
+        this.setDrawingCacheEnabled(true);
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -46,7 +48,7 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
                     case MotionEvent.ACTION_UP:
                         addPoint(-1, -1);
                         if (callback != null) {
-                            callback.onDrawn();
+                            callback.onDrawn(toBitmap());
                         }
                         break;
                     case MotionEvent.ACTION_DOWN:
@@ -63,7 +65,12 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public interface Callback {
-        void onDrawn();
+        void onDrawn(Bitmap bitmap);
+    }
+
+    private Bitmap toBitmap() {
+        this.buildDrawingCache();
+        return this.getDrawingCache();
     }
 
     public void setOnDrawn(Callback callback) {
@@ -71,7 +78,6 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void render() {
-        Log.v(TAG, "onDraw");
         if (holder == null) {
             return;
         }
@@ -103,27 +109,21 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
         holder.unlockCanvasAndPost(canvas);
     }
 
-    public void setPaint(Paint paint) {
-        this.paint = paint;
-    }
-
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.d(TAG, "surfaceCreated");
         this.holder = holder;
         render();
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.d(TAG, "surfaceDestroyed");
         this.holder = null;
     }
 
     public void restore(float[] points) {
-        Log.d(TAG, "onRestoreInstanceState");
         if (points.length % 2 > 0) {
             Log.d(TAG, "List to restore is invalid (odd length)");
+            return;
         }
 
         for (int i = 0; i < points.length; i++) {
@@ -134,12 +134,9 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.d(TAG, "surfaceChanged");
     }
 
     public void addPoint(float x, float y) {
-        Log.v(TAG, "Adding point <" + x + ", " + y + ">");
-
         points.add(x);
         points.add(y);
         render();

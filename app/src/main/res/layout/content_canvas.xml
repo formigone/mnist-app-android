@@ -16,8 +16,8 @@
 
         <mnist.ai.formigone.com.mnistapp.views.CanvasView
             android:id="@+id/canvas"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
             tools:layout_editor_absoluteX="8dp"
             tools:layout_editor_absoluteY="8dp" />
     </LinearLayout>
