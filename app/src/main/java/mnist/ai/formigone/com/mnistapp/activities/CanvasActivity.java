@@ -73,7 +73,7 @@ public class CanvasActivity extends AppCompatActivity implements CanvasView.Call
             File root = Environment.getExternalStorageDirectory();
             File file = new File(root, "mnist-" + Calendar.getInstance().getTime().getTime() + ".png");
             out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 0, out);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
 //            resized.compress(Bitmap.CompressFormat.PNG, 0, out);
             Log.v(TAG, "File: " + file.getAbsolutePath());
         } catch (Exception e) {

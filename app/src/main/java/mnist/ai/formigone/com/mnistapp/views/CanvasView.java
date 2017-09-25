@@ -20,11 +20,11 @@ import java.util.List;
  * Created by rsilveira on 9/21/17.
  */
 
-public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
+public class CanvasView extends View {
     private static final String TAG = "CanvasView";
-    private SurfaceHolder holder;
     private List<Float> points;
     private Paint paint;
+    private Canvas canvas;
     private Callback callback;
 
     public CanvasView(Context context, AttributeSet attrs) {
@@ -33,11 +33,10 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
         paint.setColor(Color.DKGRAY);
         paint.setStrokeWidth(50);
         paint.setStrokeCap(Paint.Cap.ROUND);
-
         points = new ArrayList<>();
 
-        getHolder().addCallback(this);
-        this.setDrawingCacheEnabled(true);
+        View v = this;
+
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -47,8 +46,12 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_UP:
                         addPoint(-1, -1);
-                        if (callback != null) {
-                            callback.onDrawn(toBitmap());
+                        if (callback != null && canvas != null) {
+                            Bitmap b = Bitmap.createBitmap( canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+                            Canvas c = new Canvas(b);
+                            v.layout(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
+                            v.draw(c);
+                            callback.onDrawn(b);
                         }
                         break;
                     case MotionEvent.ACTION_DOWN:
@@ -68,20 +71,21 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
         void onDrawn(Bitmap bitmap);
     }
 
-    private Bitmap toBitmap() {
-        this.buildDrawingCache();
-        return this.getDrawingCache();
+    private Bitmap toBitmap(int width, int height) {
+        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     }
 
     public void setOnDrawn(Callback callback) {
         this.callback = callback;
     }
 
-    public void render() {
-        if (holder == null) {
-            return;
-        }
-        Canvas canvas = holder.lockCanvas();
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        this.canvas = render(canvas);
+    }
+
+    private Canvas render(Canvas canvas) {
         int totalPoints = points.size();
         if (totalPoints > 0 && totalPoints % 2 == 0) {
             float xPrev = points.get(0);
@@ -106,18 +110,8 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
                 yPrev = y;
             }
         }
-        holder.unlockCanvasAndPost(canvas);
-    }
 
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        this.holder = holder;
-        render();
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        this.holder = null;
+        return canvas;
     }
 
     public void restore(float[] points) {
@@ -129,26 +123,22 @@ public class CanvasView extends SurfaceView implements SurfaceHolder.Callback {
         for (int i = 0; i < points.length; i++) {
             this.points.add(points[i]);
         }
-        render();
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        postInvalidate();
     }
 
     public void addPoint(float x, float y) {
         points.add(x);
         points.add(y);
-        render();
+        postInvalidate();
     }
 
     public float[] getPoints() {
-        float fpoints[] = new float[points.size()];
+        float points[] = new float[this.points.size()];
         int i = 0;
-        for (Float point: points) {
-            fpoints[i++] = point;
+        for (Float point : points) {
+            points[i++] = point;
         }
 
-        return fpoints;
+        return points;
     }
 }
