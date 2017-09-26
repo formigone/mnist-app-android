@@ -49,7 +49,7 @@ public class CanvasActivity extends AppCompatActivity implements CanvasView.Call
         FileOutputStream out = null;
         try {
             File root = Environment.getExternalStorageDirectory();
-            File file = new File(root, "mnist-" + Calendar.getInstance().getTime().getTime() + ".png");
+            File file = new File(root, "Pictures/mnist-" + Calendar.getInstance().getTime().getTime() + ".png");
             out = new FileOutputStream(file);
             resized.compress(Bitmap.CompressFormat.PNG, 100, out);
             Log.v(TAG, "File: " + file.getAbsolutePath());
@@ -66,7 +66,5 @@ public class CanvasActivity extends AppCompatActivity implements CanvasView.Call
         }
 
         Log.v(TAG, "Got pixels");
-//        profileImage.setImageBitmap(Bitmap.createScaledBitmap(b, 120, 120, false));
-
     }
 }
