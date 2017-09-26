@@ -32,12 +32,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ListView listView = (ListView) findViewById(R.id.main_list);
 
-        activityList.add(new SimpleItem("Order Calculator", "OrderCalculator"));
-        activityList.add(new SimpleItem("Canvas", "Canvas"));
-        activityList.add(new SimpleItem("MNIST App", "MNIST", false));
+//        activityList.add(new SimpleItem("Order Calculator", "OrderCalculator"));
+//        activityList.add(new SimpleItem("Canvas", "Canvas"));
+        activityList.add(new SimpleItem("MNIST App", "MNIST"));
 
         categoryActivityMap.put("OrderCalculator", OrderCalculatorActivity.class);
         categoryActivityMap.put("Canvas", CanvasActivity.class);
+        categoryActivityMap.put("MNIST", MnistActivity.class);
 
         SimpleAdapter listAdapter = new SimpleAdapter(this, activityList, listView);
 

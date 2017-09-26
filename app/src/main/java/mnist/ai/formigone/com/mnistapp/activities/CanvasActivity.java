@@ -39,42 +39,19 @@ public class CanvasActivity extends AppCompatActivity implements CanvasView.Call
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putFloatArray(STATE_KEY_POINTS, canvas.getPoints());
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            float points[] = savedInstanceState.getFloatArray(STATE_KEY_POINTS);
-            if (points != null) {
-                canvas.restore(points);
-            }
-        }
-        super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    @Override
     public void onDrawn(Bitmap bitmap) {
         Log.v(TAG, "CanvasView has finished drawing");
-//        Bitmap resized = Bitmap.createScaledBitmap(bitmap, 28, 28, false);
+        Bitmap resized = Bitmap.createScaledBitmap(bitmap, 28, 28, false);
 
-//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//        resized.compress(Bitmap.CompressFormat.PNG, 0, stream);
-//        byte[] pixels = stream.toByteArray();
-//        byte[] pixels = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
-
-//        int pixels[] = new int[28 * 28];
-//        resized.getPixels(pixels, 0, 28, 0, 0, 28, 28);
+        int pixels[] = new int[28 * 28];
+        resized.getPixels(pixels, 0, 28, 0, 0, 28, 28);
 
         FileOutputStream out = null;
         try {
             File root = Environment.getExternalStorageDirectory();
             File file = new File(root, "mnist-" + Calendar.getInstance().getTime().getTime() + ".png");
             out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-//            resized.compress(Bitmap.CompressFormat.PNG, 0, out);
+            resized.compress(Bitmap.CompressFormat.PNG, 100, out);
             Log.v(TAG, "File: " + file.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();

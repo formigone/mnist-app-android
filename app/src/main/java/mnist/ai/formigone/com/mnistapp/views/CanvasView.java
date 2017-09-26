@@ -5,12 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.telecom.Call;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -35,23 +32,18 @@ public class CanvasView extends View {
         paint.setStrokeCap(Paint.Cap.ROUND);
         points = new ArrayList<>();
 
-        View v = this;
-
         this.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public boolean onTouch(View view, MotionEvent event) {
                 int i = event.getActionIndex();
                 float x = event.getX(i);
                 float y = event.getY(i);
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_UP:
                         addPoint(-1, -1);
-                        if (callback != null && canvas != null) {
-                            Bitmap b = Bitmap.createBitmap( canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
-                            Canvas c = new Canvas(b);
-                            v.layout(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
-                            v.draw(c);
-                            callback.onDrawn(b);
+                        Bitmap bitmap = toBitmap(view);
+                        if (callback != null) {
+                            callback.onDrawn(bitmap);
                         }
                         break;
                     case MotionEvent.ACTION_DOWN:
@@ -71,8 +63,13 @@ public class CanvasView extends View {
         void onDrawn(Bitmap bitmap);
     }
 
-    private Bitmap toBitmap(int width, int height) {
-        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    private Bitmap toBitmap(View view) {
+        Bitmap bitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.layout(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
+        view.draw(canvas);
+
+        return bitmap;
     }
 
     public void setOnDrawn(Callback callback) {
@@ -82,16 +79,11 @@ public class CanvasView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        this.canvas = render(canvas);
-    }
-
-    private Canvas render(Canvas canvas) {
-        int totalPoints = points.size();
-        if (totalPoints > 0 && totalPoints % 2 == 0) {
+        if (points.size() > 0) {
             float xPrev = points.get(0);
             float yPrev = points.get(1);
-            float x = 0;
-            float y = 0;
+            float x;
+            float y;
 
             for (int i = 0; i < points.size(); i += 2) {
                 x = points.get(i);
@@ -110,25 +102,17 @@ public class CanvasView extends View {
                 yPrev = y;
             }
         }
-
-        return canvas;
-    }
-
-    public void restore(float[] points) {
-        if (points.length % 2 > 0) {
-            Log.d(TAG, "List to restore is invalid (odd length)");
-            return;
-        }
-
-        for (int i = 0; i < points.length; i++) {
-            this.points.add(points[i]);
-        }
-        postInvalidate();
+        this.canvas = canvas;
     }
 
     public void addPoint(float x, float y) {
         points.add(x);
         points.add(y);
+        postInvalidate();
+    }
+
+    public void reset() {
+        points.clear();
         postInvalidate();
     }
 
