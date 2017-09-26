@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.util.Random;
+
 import mnist.ai.formigone.com.mnistapp.R;
 import mnist.ai.formigone.com.mnistapp.views.CanvasView;
 
@@ -25,7 +27,9 @@ public class MnistActivity extends AppCompatActivity {
         canvas.setOnDrawn(new CanvasView.Callback() {
             @Override
             public void onDrawn(Bitmap bitmap) {
-                predictionContainer.setText("8");
+                Random random = new Random();
+                int prediction = random.nextInt(10);
+                predictionContainer.setText(Integer.toString(prediction));
             }
         });
 
