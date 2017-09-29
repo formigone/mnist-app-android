@@ -25,7 +25,10 @@
             android:name=".activities.CanvasActivity"
             android:label="@string/title_activity_canvas"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.MnistActivity"></activity>
+        <activity
+            android:name=".activities.MnistActivity"
+            android:label="MnistActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
