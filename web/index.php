@@ -25,7 +25,7 @@ canvas {
 </style>
 <ul id="pixels">
 <?php foreach ($data as $item): ?>
-  <li><?= $item; ?></li>
+  <li><?= preg_replace('|\s|', '', $item); ?></li>
 <?php endforeach; ?>
 </ul>
 
@@ -82,7 +82,7 @@ function renderPixels(pixels, list, node) {
     min = tmp;
 
     pixels = pixels.map(function(val) {
-        return (val - min) / (max - min);
+        return 1 - (val - min) / (max - min);
     })
 
     for (var i = 0, _i = 0; i < pixels.length * 4; i += 4, _i += 1) {

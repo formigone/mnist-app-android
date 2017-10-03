@@ -81,12 +81,35 @@ public class MnistActivity extends AppCompatActivity {
             Bitmap resized = Bitmap.createScaledBitmap(bitmap, 28, 28, true);
 
             Log.v(TAG, "in background... (" + resized.getWidth() + ", " + resized.getHeight() + ")");
+            int min = Integer.MIN_VALUE;
+            int max = Integer.MAX_VALUE;
+
             List<Integer> pixels = new ArrayList<Integer>();
             for (int y = 0; y < resized.getHeight(); y++) {
                 for (int x = 0; x < resized.getWidth(); x++) {
-                    pixels.add(resized.getPixel(x, y));
+                    int val = resized.getPixel(x, y);
+                    if (val > min) {
+                        min = val;
+                    }
+
+                    if (val < max) {
+                        max = val;
+                    }
                 }
             }
+
+            int tmp = max;
+            max = min;
+            min = tmp;
+
+            Log.v(TAG, "MIN/MAX: " + min + ", " + max);
+            for (int y = 0; y < resized.getHeight(); y++) {
+                for (int x = 0; x < resized.getWidth(); x++) {
+                    int val = resized.getPixel(x, y);
+                    pixels.add(1 - (val - min) / (max - min));
+                }
+            }
+            Log.v(TAG, "Normalized");
 
             return pixels;
         }
