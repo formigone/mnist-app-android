@@ -1,6 +1,7 @@
 package mnist.ai.formigone.com.mnistapp.activities;
 
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -69,22 +70,23 @@ public class MnistActivity extends AppCompatActivity {
         });
     }
 
-    private class MnistPost extends AsyncTask<Bitmap, Integer, List<Integer>> {
+    private class MnistPost extends AsyncTask<Bitmap, Integer, List<Double>> {
         @Override
         protected void onPreExecute() {
             Log.v(TAG, "Pre execution of async task");
         }
 
         @Override
-        protected List<Integer> doInBackground(Bitmap... params) {
+        protected List<Double> doInBackground(Bitmap... params) {
             Bitmap bitmap = params[0];
-            Bitmap resized = Bitmap.createScaledBitmap(bitmap, 28, 28, true);
+            Bitmap resized = Bitmap.createScaledBitmap(bitmap, 27, 27, true);
+            resized = Bitmap.createScaledBitmap(resized, 28, 28, true);
 
             Log.v(TAG, "in background... (" + resized.getWidth() + ", " + resized.getHeight() + ")");
             int min = Integer.MIN_VALUE;
             int max = Integer.MAX_VALUE;
 
-            List<Integer> pixels = new ArrayList<Integer>();
+            List<Double> pixels = new ArrayList<Double>();
             for (int y = 0; y < resized.getHeight(); y++) {
                 for (int x = 0; x < resized.getWidth(); x++) {
                     int val = resized.getPixel(x, y);
@@ -101,12 +103,17 @@ public class MnistActivity extends AppCompatActivity {
             int tmp = max;
             max = min;
             min = tmp;
+            double range = max - min;
+
+            if (range == 0) {
+                range = 0.01;
+            }
 
             Log.v(TAG, "MIN/MAX: " + min + ", " + max);
             for (int y = 0; y < resized.getHeight(); y++) {
                 for (int x = 0; x < resized.getWidth(); x++) {
                     int val = resized.getPixel(x, y);
-                    pixels.add(1 - (val - min) / (max - min));
+                    pixels.add(1 - (val - min) / range);
                 }
             }
             Log.v(TAG, "Normalized");
@@ -115,7 +122,7 @@ public class MnistActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(List<Integer> pixels) {
+        protected void onPostExecute(List<Double> pixels) {
             Log.v(TAG, "Got pixels: " + pixels);
             Toast.makeText(getBaseContext(), "Got pixels", Toast.LENGTH_SHORT).show();
             JSONObject payload;

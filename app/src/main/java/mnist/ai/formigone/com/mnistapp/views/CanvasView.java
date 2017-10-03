@@ -2,9 +2,13 @@ package mnist.ai.formigone.com.mnistapp.views;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -28,8 +32,9 @@ public class CanvasView extends View {
         super(context, attrs);
         this.paint = new Paint();
         paint.setColor(Color.DKGRAY);
-        paint.setStrokeWidth(75);
+        paint.setStrokeWidth(85);
         paint.setStrokeCap(Paint.Cap.ROUND);
+
         points = new ArrayList<>();
 
         this.setOnTouchListener(new View.OnTouchListener() {
