@@ -52,11 +52,26 @@ public class MnistActivity extends AppCompatActivity {
             public void onDrawn(Bitmap bitmap) {
                 Log.v(TAG, "Processing pixels");
                 new MnistPost().execute(bitmap);
-                Random random = new Random();
-                int prediction = random.nextInt(10);
-                predictionContainer.setText(Integer.toString(prediction));
+                predictionContainer.setText("...");
             }
         });
+
+        // response from model: {
+        //      "predictions":[
+        //          -6.6451120376587,
+        //          1.7916091680527,
+        //          -7.4739499092102,
+        //          3.5438303947449,
+        //          0.73703813552856,
+        //          -2.1572058200836,
+        //          -10.432391166687,
+        //          0.94211292266846,
+        //          1.2044558525085,
+        //          8.8206148147583
+        //      ],
+        //      "prediction": 9,
+        //      "classes": [0,1,2,3,4,5,6,7,8,9]
+        // }
 
         predictionContainer = (TextView) findViewById(R.id.prediction);
         findViewById(R.id.btn_correct).setEnabled(false);
@@ -124,7 +139,6 @@ public class MnistActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Double> pixels) {
             Log.v(TAG, "Got pixels: " + pixels);
-            Toast.makeText(getBaseContext(), "Got pixels", Toast.LENGTH_SHORT).show();
             JSONObject payload;
 
             try {
@@ -136,14 +150,23 @@ public class MnistActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(JSONObject response) {
                                 Log.v(TAG, "RESP(200): " + response);
-                                Toast.makeText(getBaseContext(), "Image saved", Toast.LENGTH_SHORT).show();
+                                try {
+                                    JSONObject resp = response.getJSONObject("response");
+                                    int predicton = resp.getInt("prediction");
+                                    predictionContainer.setText(Integer.toString(predicton));
+                                } catch (JSONException error) {
+                                    Log.e(TAG, error.getMessage());
+                                    Toast.makeText(getBaseContext(), "Could not parse response: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                                    predictionContainer.setText("");
+                                }
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.v(TAG, "RESP(~200): " + error.getMessage());
-                                Toast.makeText(getBaseContext(), "Error saving image: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getBaseContext(), "Error classifying digit: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                                predictionContainer.setText("");
                             }
                         });
 
