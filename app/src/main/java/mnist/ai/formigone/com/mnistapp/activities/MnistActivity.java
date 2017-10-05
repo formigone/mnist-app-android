@@ -3,11 +3,16 @@ package mnist.ai.formigone.com.mnistapp.activities;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.os.AsyncTask;
+import android.support.constraint.ConstraintSet;
+import android.support.v7.app.ActionBar;
+import android.support.constraint.ConstraintLayout.LayoutParams;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,6 +79,17 @@ public class MnistActivity extends AppCompatActivity {
         // }
 
         predictionContainer = (TextView) findViewById(R.id.prediction);
+        ImageView bar_0 = (ImageView) findViewById(R.id.prediction_graph_0);
+        ImageView bar_3 = (ImageView) findViewById(R.id.prediction_graph_3);
+
+        int bar0Bottom = bar_0.getBottom();
+        int bar3Bottom = bar_3.getBottom();
+        int predBottom = predictionContainer.getBottom();
+
+//        bar_0.setLayoutParams(new LayoutParams(bar_0.getWidth(), (bar0Bottom - predBottom) / 2));
+//        bar_3.setLayoutParams(new LayoutParams(bar_3.getWidth(), (bar3Bottom - predBottom) / 4));
+//        bar_3.setLayoutParams(new LayoutParams(bar_3.getLayoutParams().width, (int)(bar_3.getLayoutParams().height * 0.75)));
+
         findViewById(R.id.btn_correct).setEnabled(false);
         findViewById(R.id.btn_wrong).setEnabled(false);
         findViewById(R.id.btn_new).setOnClickListener(new View.OnClickListener() {
