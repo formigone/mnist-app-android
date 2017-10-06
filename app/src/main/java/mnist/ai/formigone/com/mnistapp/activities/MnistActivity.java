@@ -3,6 +3,7 @@ package mnist.ai.formigone.com.mnistapp.activities;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.os.AsyncTask;
+import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.ActionBar;
 import android.support.constraint.ConstraintLayout.LayoutParams;
@@ -45,6 +46,8 @@ public class MnistActivity extends AppCompatActivity {
     private TextView predictionContainer;
     private RequestQueue queue;
 
+    private List<ImageView> bars;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,16 +82,18 @@ public class MnistActivity extends AppCompatActivity {
         // }
 
         predictionContainer = (TextView) findViewById(R.id.prediction);
-        ImageView bar_0 = (ImageView) findViewById(R.id.prediction_graph_0);
-        ImageView bar_3 = (ImageView) findViewById(R.id.prediction_graph_3);
 
-        int bar0Bottom = bar_0.getBottom();
-        int bar3Bottom = bar_3.getBottom();
-        int predBottom = predictionContainer.getBottom();
-
-//        bar_0.setLayoutParams(new LayoutParams(bar_0.getWidth(), (bar0Bottom - predBottom) / 2));
-//        bar_3.setLayoutParams(new LayoutParams(bar_3.getWidth(), (bar3Bottom - predBottom) / 4));
-//        bar_3.setLayoutParams(new LayoutParams(bar_3.getLayoutParams().width, (int)(bar_3.getLayoutParams().height * 0.75)));
+        bars = new ArrayList<ImageView>();
+        bars.add((ImageView) findViewById(R.id.prediction_graph_0));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_1));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_2));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_3));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_4));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_5));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_6));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_7));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_8));
+        bars.add((ImageView) findViewById(R.id.prediction_graph_9));
 
         findViewById(R.id.btn_correct).setEnabled(false);
         findViewById(R.id.btn_wrong).setEnabled(false);
@@ -97,8 +102,31 @@ public class MnistActivity extends AppCompatActivity {
             public void onClick(View v) {
                 canvas.reset();
                 predictionContainer.setText("");
+                drawBars(null);
             }
         });
+
+        drawBars(null);
+    }
+
+    /**
+     *
+     * @param percents If not set, or has less elements than bars, bar will be set to 0
+     */
+    private void drawBars(double[] percents) {
+        int maxHeight = bars.get(0).getBottom() - predictionContainer.getBottom();
+        if (maxHeight == 0) {
+            maxHeight = 1000;
+        }
+        for (int i = 0; i < bars.size(); i++) {
+            ImageView bar = bars.get(i);
+            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) bar.getLayoutParams();
+            lp.topMargin = maxHeight;
+            if (percents != null && percents.length > i) {
+                lp.topMargin = (int)(maxHeight * percents[i]);
+            }
+            bar.setLayoutParams(lp);
+        }
     }
 
     private class MnistPost extends AsyncTask<Bitmap, Integer, List<Double>> {
@@ -170,10 +198,18 @@ public class MnistActivity extends AppCompatActivity {
                                     JSONObject resp = response.getJSONObject("response");
                                     int predicton = resp.getInt("prediction");
                                     predictionContainer.setText(Integer.toString(predicton));
+                                    double[] percents = new double[bars.size()];
+
+                                    // TODO: use response from API
+                                    for (int i = 0; i < bars.size(); i++) {
+                                        percents[i] = Math.random();
+                                    }
+                                    drawBars(percents);
                                 } catch (JSONException error) {
                                     Log.e(TAG, error.getMessage());
                                     Toast.makeText(getBaseContext(), "Could not parse response: " + error.getMessage(), Toast.LENGTH_LONG).show();
                                     predictionContainer.setText("");
+                                    drawBars(null);
                                 }
                             }
                         },
@@ -183,6 +219,7 @@ public class MnistActivity extends AppCompatActivity {
                                 Log.v(TAG, "RESP(~200): " + error.getMessage());
                                 Toast.makeText(getBaseContext(), "Error classifying digit: " + error.getMessage(), Toast.LENGTH_LONG).show();
                                 predictionContainer.setText("");
+                                drawBars(null);
                             }
                         });
 
