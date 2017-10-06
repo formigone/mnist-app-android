@@ -123,7 +123,7 @@ public class MnistActivity extends AppCompatActivity {
             ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) bar.getLayoutParams();
             lp.topMargin = maxHeight;
             if (percents != null && percents.length > i) {
-                lp.topMargin = (int)(maxHeight * percents[i]);
+                lp.topMargin = maxHeight - (int)(maxHeight * percents[i]);
             }
             bar.setLayoutParams(lp);
         }
@@ -180,6 +180,35 @@ public class MnistActivity extends AppCompatActivity {
             return pixels;
         }
 
+        private double[] scale(double[] values) {
+            double[] scaled = new double[values.length];
+            double min = 0;
+            double max = 0;
+
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] > max) {
+                    max = values[i];
+                }
+
+                if (values[i] < min) {
+                    min = values[i];
+                }
+            }
+
+            double diff = max - min;
+            double oneNth = 1 / values.length;
+
+            for (int i = 0; i < values.length; i++) {
+                if (diff == 0) {
+                    scaled[i] = oneNth;
+                } else {
+                    scaled[i] = (values[i] - min) / diff;
+                }
+            }
+
+            return scaled;
+        }
+
         @Override
         protected void onPostExecute(List<Double> pixels) {
             Log.v(TAG, "Got pixels: " + pixels);
@@ -196,14 +225,15 @@ public class MnistActivity extends AppCompatActivity {
                                 Log.v(TAG, "RESP(200): " + response);
                                 try {
                                     JSONObject resp = response.getJSONObject("response");
-                                    int predicton = resp.getInt("prediction");
-                                    predictionContainer.setText(Integer.toString(predicton));
-                                    double[] percents = new double[bars.size()];
+                                    int prediction = resp.getInt("prediction");
+                                    predictionContainer.setText(Integer.toString(prediction));
+                                    JSONArray predictions = resp.getJSONArray("predictions");
+                                    double[] percents = new double[predictions.length()];
 
-                                    // TODO: use response from API
                                     for (int i = 0; i < bars.size(); i++) {
-                                        percents[i] = Math.random();
+                                        percents[i] = predictions.getDouble(i);
                                     }
+                                    percents = scale(percents);
                                     drawBars(percents);
                                 } catch (JSONException error) {
                                     Log.e(TAG, error.getMessage());
