@@ -32,7 +32,7 @@ public class CanvasView extends View {
         super(context, attrs);
         this.paint = new Paint();
         paint.setColor(Color.DKGRAY);
-        paint.setStrokeWidth(85);
+        paint.setStrokeWidth(55);
         paint.setStrokeCap(Paint.Cap.ROUND);
 
         points = new ArrayList<>();

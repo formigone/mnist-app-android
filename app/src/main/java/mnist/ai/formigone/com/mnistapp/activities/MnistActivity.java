@@ -5,7 +5,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -21,6 +24,7 @@ public class MnistActivity extends AppCompatActivity {
     private static final String TAG = "MnistActivity";
     private CanvasView canvas;
     private TextView predictionContainer;
+    private TextView predictionPercentContainer;
 //    private RequestQueue queue;
 
     private List<ImageView> bars;
@@ -33,6 +37,9 @@ public class MnistActivity extends AppCompatActivity {
         setContentView(R.layout.activity_mnist);
 //        queue = Volley.newRequestQueue(this);
         classifier = new MnistClassifier(getAssets(), "mnist-20171007.pb");
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         canvas = (CanvasView) findViewById(R.id.canvas);
         canvas.setOnDrawn(new CanvasView.Callback() {
@@ -62,6 +69,7 @@ public class MnistActivity extends AppCompatActivity {
         // }
 
         predictionContainer = (TextView) findViewById(R.id.prediction);
+        predictionPercentContainer = (TextView) findViewById(R.id.prediction_percent);
 
         bars = new ArrayList<ImageView>();
         bars.add((ImageView) findViewById(R.id.prediction_graph_0));
@@ -77,16 +85,30 @@ public class MnistActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_correct).setVisibility(View.GONE);
         findViewById(R.id.btn_wrong).setVisibility(View.GONE);
-        findViewById(R.id.btn_new).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                canvas.reset();
-                predictionContainer.setText("");
-                drawBars(null);
-            }
-        });
 
         drawBars(null);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_clear:
+                canvas.reset();
+                predictionContainer.setText("");
+                predictionPercentContainer.setText("");
+                findViewById(R.id.btn_correct).setVisibility(View.GONE);
+                findViewById(R.id.btn_wrong).setVisibility(View.GONE);
+                drawBars(null);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_mnist, menu);
+        return true;
     }
 
     /**
@@ -196,6 +218,9 @@ public class MnistActivity extends AppCompatActivity {
             Log.v(TAG, "Got pixels");
             classifier.classify(pixels);
             predictionContainer.setText(Integer.toString(classifier.getPrediction()));
+//            predictionPercentContainer.setText(String.format("%.2f", classifier.getPredictionPercent()) + "%");
+//            findViewById(R.id.btn_correct).setVisibility(View.VISIBLE);
+//            findViewById(R.id.btn_wrong).setVisibility(View.VISIBLE);
             drawBars(classifier.getPercentages());
 //            JSONObject payload;
 //

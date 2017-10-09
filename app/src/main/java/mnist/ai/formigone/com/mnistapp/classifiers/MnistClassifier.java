@@ -26,18 +26,23 @@ public class MnistClassifier {
         graphDef.run(new String[]{"fc2/add"});
 
         graphDef.fetch("fc2/add", percentages);
+        percentages = scale(percentages);
 
         return this;
     }
 
     public float[] getPercentages() {
-        percentages = scale(percentages);
         return percentages;
     }
 
     public int getPrediction() {
         prediction = argMax(percentages);
         return prediction;
+    }
+
+    public float getPredictionPercent() {
+        int prediction = argMax(percentages);
+        return percentages[prediction];
     }
 
     private int argMax(float[] values) {
@@ -56,8 +61,8 @@ public class MnistClassifier {
 
     private float[] scale(float[] values) {
         float[] scaled = new float[values.length];
-        float min = 0;
-        float max = 0;
+        float min = Float.MAX_VALUE;
+        float max = Float.MIN_VALUE;
 
         for (int i = 0; i < values.length; i++) {
             if (values[i] > max) {
