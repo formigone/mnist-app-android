@@ -46,9 +46,13 @@ public class CanvasView extends View {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_UP:
                         addPoint(-1, -1);
-                        Bitmap bitmap = toBitmap(view);
-                        if (callback != null) {
-                            callback.onDrawn(bitmap);
+                        try {
+                            Bitmap bitmap = toBitmap(view);
+                            if (callback != null) {
+                                callback.onDrawn(bitmap);
+                            }
+                        } catch (IllegalArgumentException e) {
+                            Log.e(TAG, "ERROR: " + e.getMessage());
                         }
                         break;
                     case MotionEvent.ACTION_DOWN:

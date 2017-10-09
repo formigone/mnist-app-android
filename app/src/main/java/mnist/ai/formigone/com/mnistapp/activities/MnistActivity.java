@@ -45,7 +45,7 @@ public class MnistActivity extends AppCompatActivity {
     private static final String TAG = "MnistActivity";
     private CanvasView canvas;
     private TextView predictionContainer;
-    private RequestQueue queue;
+//    private RequestQueue queue;
 
     private List<ImageView> bars;
 
@@ -55,7 +55,7 @@ public class MnistActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mnist);
-        queue = Volley.newRequestQueue(this);
+//        queue = Volley.newRequestQueue(this);
         classifier = new MnistClassifier(getAssets(), "mnist-20171007.pb");
 
         canvas = (CanvasView) findViewById(R.id.canvas);
@@ -217,7 +217,7 @@ public class MnistActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(float[] pixels) {
-            Log.v(TAG, "Got pixels: " + pixels.toString());
+            Log.v(TAG, "Got pixels");
             classifier.classify(pixels);
             predictionContainer.setText(Integer.toString(classifier.getPrediction()));
             drawBars(classifier.getPercentages());

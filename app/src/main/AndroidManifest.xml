@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="mnist.ai.formigone.com.mnistapp">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_red"
@@ -11,24 +9,15 @@
         android:roundIcon="@mipmap/ic_launcher_red"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.MainActivity">
+        <activity
+            android:name=".activities.MnistActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.OrderCalculatorActivity"
-            android:label="@string/title_activity_order_calculator" />
-        <activity
-            android:name=".activities.CanvasActivity"
-            android:label="@string/title_activity_canvas"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".activities.MnistActivity"
-            android:label="MnistActivity"
-            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
