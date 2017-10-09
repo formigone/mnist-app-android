@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Random;
 
 import mnist.ai.formigone.com.mnistapp.R;
+import mnist.ai.formigone.com.mnistapp.classifiers.MnistClassifier;
 import mnist.ai.formigone.com.mnistapp.views.CanvasView;
 
 public class MnistActivity extends AppCompatActivity {
@@ -48,11 +49,14 @@ public class MnistActivity extends AppCompatActivity {
 
     private List<ImageView> bars;
 
+    private MnistClassifier classifier;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mnist);
         queue = Volley.newRequestQueue(this);
+        classifier = new MnistClassifier(getAssets(), "mnist-20171007.pb");
 
         canvas = (CanvasView) findViewById(R.id.canvas);
         canvas.setOnDrawn(new CanvasView.Callback() {
@@ -95,8 +99,8 @@ public class MnistActivity extends AppCompatActivity {
         bars.add((ImageView) findViewById(R.id.prediction_graph_8));
         bars.add((ImageView) findViewById(R.id.prediction_graph_9));
 
-        findViewById(R.id.btn_correct).setEnabled(false);
-        findViewById(R.id.btn_wrong).setEnabled(false);
+        findViewById(R.id.btn_correct).setVisibility(View.GONE);
+        findViewById(R.id.btn_wrong).setVisibility(View.GONE);
         findViewById(R.id.btn_new).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,7 +117,7 @@ public class MnistActivity extends AppCompatActivity {
      *
      * @param percents If not set, or has less elements than bars, bar will be set to 0
      */
-    private void drawBars(double[] percents) {
+    private void drawBars(float[] percents) {
         int maxHeight = bars.get(0).getBottom() - predictionContainer.getBottom();
         if (maxHeight == 0) {
             maxHeight = 1000;
@@ -129,14 +133,14 @@ public class MnistActivity extends AppCompatActivity {
         }
     }
 
-    private class MnistPost extends AsyncTask<Bitmap, Integer, List<Double>> {
+    private class MnistPost extends AsyncTask<Bitmap, Integer, float[]> {
         @Override
         protected void onPreExecute() {
             Log.v(TAG, "Pre execution of async task");
         }
 
         @Override
-        protected List<Double> doInBackground(Bitmap... params) {
+        protected float[] doInBackground(Bitmap... params) {
             Bitmap bitmap = params[0];
             Bitmap resized = Bitmap.createScaledBitmap(bitmap, 27, 27, true);
             resized = Bitmap.createScaledBitmap(resized, 28, 28, true);
@@ -145,7 +149,7 @@ public class MnistActivity extends AppCompatActivity {
             int min = Integer.MIN_VALUE;
             int max = Integer.MAX_VALUE;
 
-            List<Double> pixels = new ArrayList<Double>();
+            float[] pixels = new float[resized.getWidth() * resized.getHeight()];
             for (int y = 0; y < resized.getHeight(); y++) {
                 for (int x = 0; x < resized.getWidth(); x++) {
                     int val = resized.getPixel(x, y);
@@ -159,20 +163,22 @@ public class MnistActivity extends AppCompatActivity {
                 }
             }
 
+            int i = 0;
             int tmp = max;
             max = min;
             min = tmp;
-            double range = max - min;
-
-            if (range == 0) {
-                range = 0.01;
-            }
+            float range = max - min;
+            float oneNth = 1 / resized.getWidth() * resized.getHeight();
 
             Log.v(TAG, "MIN/MAX: " + min + ", " + max);
             for (int y = 0; y < resized.getHeight(); y++) {
-                for (int x = 0; x < resized.getWidth(); x++) {
+                for (int x = 0; x < resized.getWidth(); x++, i++) {
                     int val = resized.getPixel(x, y);
-                    pixels.add(1 - (val - min) / range);
+                    if (range == 0) {
+                        pixels[i] = 1 - oneNth;
+                    } else {
+                        pixels[i] = 1 - (val - min) / range;
+                    }
                 }
             }
             Log.v(TAG, "Normalized");
@@ -180,83 +186,86 @@ public class MnistActivity extends AppCompatActivity {
             return pixels;
         }
 
-        private double[] scale(double[] values) {
-            double[] scaled = new double[values.length];
-            double min = 0;
-            double max = 0;
-
-            for (int i = 0; i < values.length; i++) {
-                if (values[i] > max) {
-                    max = values[i];
-                }
-
-                if (values[i] < min) {
-                    min = values[i];
-                }
-            }
-
-            double diff = max - min;
-            double oneNth = 1 / values.length;
-
-            for (int i = 0; i < values.length; i++) {
-                if (diff == 0) {
-                    scaled[i] = oneNth;
-                } else {
-                    scaled[i] = (values[i] - min) / diff;
-                }
-            }
-
-            return scaled;
-        }
+//        private double[] scale(double[] values) {
+//            double[] scaled = new double[values.length];
+//            double min = 0;
+//            double max = 0;
+//
+//            for (int i = 0; i < values.length; i++) {
+//                if (values[i] > max) {
+//                    max = values[i];
+//                }
+//
+//                if (values[i] < min) {
+//                    min = values[i];
+//                }
+//            }
+//
+//            double diff = max - min;
+//            double oneNth = 1 / values.length;
+//
+//            for (int i = 0; i < values.length; i++) {
+//                if (diff == 0) {
+//                    scaled[i] = oneNth;
+//                } else {
+//                    scaled[i] = (values[i] - min) / diff;
+//                }
+//            }
+//
+//            return scaled;
+//        }
 
         @Override
-        protected void onPostExecute(List<Double> pixels) {
-            Log.v(TAG, "Got pixels: " + pixels);
-            JSONObject payload;
-
-            try {
-                payload = new JSONObject();
-                payload.put("pixels", new JSONArray(pixels));
-
-                JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, "http://10.0.2.2:8088/api.php", payload,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                Log.v(TAG, "RESP(200): " + response);
-                                try {
-                                    JSONObject resp = response.getJSONObject("response");
-                                    int prediction = resp.getInt("prediction");
-                                    predictionContainer.setText(Integer.toString(prediction));
-                                    JSONArray predictions = resp.getJSONArray("predictions");
-                                    double[] percents = new double[predictions.length()];
-
-                                    for (int i = 0; i < bars.size(); i++) {
-                                        percents[i] = predictions.getDouble(i);
-                                    }
-                                    percents = scale(percents);
-                                    drawBars(percents);
-                                } catch (JSONException error) {
-                                    Log.e(TAG, error.getMessage());
-                                    Toast.makeText(getBaseContext(), "Could not parse response: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                                    predictionContainer.setText("");
-                                    drawBars(null);
-                                }
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.v(TAG, "RESP(~200): " + error.getMessage());
-                                Toast.makeText(getBaseContext(), "Error classifying digit: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                                predictionContainer.setText("");
-                                drawBars(null);
-                            }
-                        });
-
-                queue.add(req);
-            } catch (JSONException e) {
-                Toast.makeText(getBaseContext(), "Error preparing POST request", Toast.LENGTH_SHORT).show();
-            }
+        protected void onPostExecute(float[] pixels) {
+            Log.v(TAG, "Got pixels: " + pixels.toString());
+            classifier.classify(pixels);
+            predictionContainer.setText(Integer.toString(classifier.getPrediction()));
+            drawBars(classifier.getPercentages());
+//            JSONObject payload;
+//
+//            try {
+//                payload = new JSONObject();
+//                payload.put("pixels", new JSONArray(pixels));
+//
+//                JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, "http://10.0.2.2:8088/api.php", payload,
+//                        new Response.Listener<JSONObject>() {
+//                            @Override
+//                            public void onResponse(JSONObject response) {
+//                                Log.v(TAG, "RESP(200): " + response);
+//                                try {
+//                                    JSONObject resp = response.getJSONObject("response");
+//                                    int prediction = resp.getInt("prediction");
+//                                    predictionContainer.setText(Integer.toString(prediction));
+//                                    JSONArray predictions = resp.getJSONArray("predictions");
+//                                    double[] percents = new double[predictions.length()];
+//
+//                                    for (int i = 0; i < bars.size(); i++) {
+//                                        percents[i] = predictions.getDouble(i);
+//                                    }
+//                                    percents = scale(percents);
+//                                    drawBars(percents);
+//                                } catch (JSONException error) {
+//                                    Log.e(TAG, error.getMessage());
+//                                    Toast.makeText(getBaseContext(), "Could not parse response: " + error.getMessage(), Toast.LENGTH_LONG).show();
+//                                    predictionContainer.setText("");
+//                                    drawBars(null);
+//                                }
+//                            }
+//                        },
+//                        new Response.ErrorListener() {
+//                            @Override
+//                            public void onErrorResponse(VolleyError error) {
+//                                Log.v(TAG, "RESP(~200): " + error.getMessage());
+//                                Toast.makeText(getBaseContext(), "Error classifying digit: " + error.getMessage(), Toast.LENGTH_LONG).show();
+//                                predictionContainer.setText("");
+//                                drawBars(null);
+//                            }
+//                        });
+//
+//                queue.add(req);
+//            } catch (JSONException e) {
+//                Toast.makeText(getBaseContext(), "Error preparing POST request", Toast.LENGTH_SHORT).show();
+//            }
         }
     }
 }
