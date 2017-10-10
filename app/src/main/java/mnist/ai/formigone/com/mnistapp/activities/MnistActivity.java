@@ -10,12 +10,23 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.analytics.FirebaseAnalytics;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +42,7 @@ public class MnistActivity extends AppCompatActivity {
     private TextView predictionPercentContainer;
     private ImageButton btnWrong;
     private ImageButton btnCorrect;
-//    private RequestQueue queue;
+    private RequestQueue queue;
 
     private List<ImageView> bars;
     private FirebaseAnalytics tracker;
@@ -41,7 +52,7 @@ public class MnistActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mnist);
-//        queue = Volley.newRequestQueue(this);
+        queue = Volley.newRequestQueue(this);
         classifier = new MnistClassifier(getAssets(), "mnist-20171007.pb");
         tracker = FirebaseAnalytics.getInstance(this);
         tracker.setAnalyticsCollectionEnabled(true);
@@ -57,23 +68,6 @@ public class MnistActivity extends AppCompatActivity {
                 predictionContainer.setText("...");
             }
         });
-
-        // response from model: {
-        //      "predictions":[
-        //          -6.6451120376587,
-        //          1.7916091680527,
-        //          -7.4739499092102,
-        //          3.5438303947449,
-        //          0.73703813552856,
-        //          -2.1572058200836,
-        //          -10.432391166687,
-        //          0.94211292266846,
-        //          1.2044558525085,
-        //          8.8206148147583
-        //      ],
-        //      "prediction": 9,
-        //      "classes": [0,1,2,3,4,5,6,7,8,9]
-        // }
 
         predictionContainer = (TextView) findViewById(R.id.prediction);
         predictionPercentContainer = (TextView) findViewById(R.id.prediction_percent);
@@ -225,7 +219,7 @@ public class MnistActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(float[] pixels) {
-            Log.v(TAG, "Got pixels");
+            Log.v(TAG, "Classifying input");
             classifier.classify(pixels);
             predictionContainer.setText(Integer.toString(classifier.getPrediction()));
 //            predictionPercentContainer.setText(String.format("%.2f", classifier.getPredictionPercent()) + "%");
@@ -234,51 +228,39 @@ public class MnistActivity extends AppCompatActivity {
             btnWrong.setVisibility(View.VISIBLE);
             btnWrong.setAlpha(1f);
             drawBars(classifier.getPercentages());
-//            JSONObject payload;
-//
-//            try {
-//                payload = new JSONObject();
-//                payload.put("pixels", new JSONArray(pixels));
-//
-//                JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, "http://10.0.2.2:8088/api.php", payload,
-//                        new Response.Listener<JSONObject>() {
-//                            @Override
-//                            public void onResponse(JSONObject response) {
-//                                Log.v(TAG, "RESP(200): " + response);
-//                                try {
-//                                    JSONObject resp = response.getJSONObject("response");
-//                                    int prediction = resp.getInt("prediction");
-//                                    predictionContainer.setText(Integer.toString(prediction));
-//                                    JSONArray predictions = resp.getJSONArray("predictions");
-//                                    double[] percents = new double[predictions.length()];
-//
-//                                    for (int i = 0; i < bars.size(); i++) {
-//                                        percents[i] = predictions.getDouble(i);
-//                                    }
-//                                    percents = scale(percents);
-//                                    drawBars(percents);
-//                                } catch (JSONException error) {
-//                                    Log.e(TAG, error.getMessage());
-//                                    Toast.makeText(getBaseContext(), "Could not parse response: " + error.getMessage(), Toast.LENGTH_LONG).show();
-//                                    predictionContainer.setText("");
-//                                    drawBars(null);
-//                                }
-//                            }
-//                        },
-//                        new Response.ErrorListener() {
-//                            @Override
-//                            public void onErrorResponse(VolleyError error) {
-//                                Log.v(TAG, "RESP(~200): " + error.getMessage());
-//                                Toast.makeText(getBaseContext(), "Error classifying digit: " + error.getMessage(), Toast.LENGTH_LONG).show();
-//                                predictionContainer.setText("");
-//                                drawBars(null);
-//                            }
-//                        });
-//
-//                queue.add(req);
-//            } catch (JSONException e) {
-//                Toast.makeText(getBaseContext(), "Error preparing POST request", Toast.LENGTH_SHORT).show();
-//            }
+
+            JSONObject payload;
+
+            try {
+                payload = new JSONObject();
+                List<Float> lpixels = new ArrayList<Float>();
+                for (int i = 0; i < pixels.length; i++) {
+                    lpixels.add(pixels[i]);
+                }
+
+                payload.put("pixels", new JSONArray(lpixels));
+                Log.v(TAG, "Saving digit");
+
+                JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, "http://76.27.18.54:668/v1", payload,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.v(TAG, "RESP(200): " + response);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.v(TAG, "RESP(>299): " + error.toString());
+                            }
+                        });
+
+                req.setRetryPolicy(new DefaultRetryPolicy(2500, 5, 1f));
+
+                queue.add(req);
+            } catch (JSONException e) {
+                Log.e(TAG, "ERROR: " + e.getMessage());
+            }
         }
     }
 }
