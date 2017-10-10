@@ -2,7 +2,6 @@ package mnist.ai.formigone.com.mnistapp.activities;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +10,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,7 +36,6 @@ public class MnistActivity extends AppCompatActivity {
     private List<ImageView> bars;
     private FirebaseAnalytics tracker;
     private MnistClassifier classifier;
-    private int barMaxHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +111,8 @@ public class MnistActivity extends AppCompatActivity {
                 btnCorrect.setAlpha(1f);
             }
         });
+
+        drawBars(null);
     }
 
     @Override
@@ -152,8 +153,14 @@ public class MnistActivity extends AppCompatActivity {
             if (percents != null && percents.length > i) {
                 lp.topMargin = maxHeight - (int)(maxHeight * percents[i]);
             }
+
             bar.setLayoutParams(lp);
-            bar.animate().scaleY(1.5f);
+            if (lp.topMargin < 100) {
+                bar.setTranslationY(500f);
+            } else {
+                bar.setTranslationY(lp.topMargin * 2f);
+            }
+            bar.animate().translationY(0.f);
         }
     }
 
@@ -164,8 +171,6 @@ public class MnistActivity extends AppCompatActivity {
         canvas.setAlpha(0.5f);
         canvas.animate().translationY(-32);
         canvas.animate().alpha(1f);
-        barMaxHeight = bars.get(0).getHeight();
-        drawBars(null);
     }
 
     private class MnistPost extends AsyncTask<Bitmap, Integer, float[]> {
