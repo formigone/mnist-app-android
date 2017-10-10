@@ -67,12 +67,11 @@
 
     <ImageButton
         android:id="@+id/btn_wrong"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:layout_marginLeft="-1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="32dp"
         android:background="@mipmap/ic_thumb_down_white_48dp"
-        android:elevation="0dp"
         android:text="-1"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintLeft_toRightOf="@+id/guideline_left"
@@ -109,9 +108,9 @@
 
     <ImageButton
         android:id="@+id/btn_correct"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="32dp"
         android:background="@mipmap/ic_thumb_up_white_48dp"
         android:text="+1"
         app:layout_constraintLeft_toRightOf="@+id/prediction"

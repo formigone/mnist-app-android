@@ -2,6 +2,7 @@ package mnist.ai.formigone.com.mnistapp.activities;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -10,8 +11,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +29,14 @@ public class MnistActivity extends AppCompatActivity {
     private CanvasView canvas;
     private TextView predictionContainer;
     private TextView predictionPercentContainer;
+    private ImageButton btnWrong;
+    private ImageButton btnCorrect;
 //    private RequestQueue queue;
 
     private List<ImageView> bars;
-
+    private FirebaseAnalytics tracker;
     private MnistClassifier classifier;
+    private int barMaxHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +44,8 @@ public class MnistActivity extends AppCompatActivity {
         setContentView(R.layout.activity_mnist);
 //        queue = Volley.newRequestQueue(this);
         classifier = new MnistClassifier(getAssets(), "mnist-20171007.pb");
+        tracker = FirebaseAnalytics.getInstance(this);
+        tracker.setAnalyticsCollectionEnabled(true);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -45,7 +54,6 @@ public class MnistActivity extends AppCompatActivity {
         canvas.setOnDrawn(new CanvasView.Callback() {
             @Override
             public void onDrawn(Bitmap bitmap) {
-                Log.v(TAG, "Processing pixels");
                 new MnistPost().execute(bitmap);
                 predictionContainer.setText("...");
             }
@@ -83,10 +91,27 @@ public class MnistActivity extends AppCompatActivity {
         bars.add((ImageView) findViewById(R.id.prediction_graph_8));
         bars.add((ImageView) findViewById(R.id.prediction_graph_9));
 
-        findViewById(R.id.btn_correct).setVisibility(View.GONE);
-        findViewById(R.id.btn_wrong).setVisibility(View.GONE);
+        btnWrong = (ImageButton)findViewById(R.id.btn_correct);
+        btnCorrect = (ImageButton)findViewById(R.id.btn_wrong);
 
-        drawBars(null);
+        btnWrong.setVisibility(View.GONE);
+        btnCorrect.setVisibility(View.GONE);
+
+        btnWrong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnCorrect.setAlpha(0.5f);
+                btnWrong.setAlpha(1f);
+            }
+        });
+
+        btnCorrect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnWrong.setAlpha(0.5f);
+                btnCorrect.setAlpha(1f);
+            }
+        });
     }
 
     @Override
@@ -128,7 +153,19 @@ public class MnistActivity extends AppCompatActivity {
                 lp.topMargin = maxHeight - (int)(maxHeight * percents[i]);
             }
             bar.setLayoutParams(lp);
+            bar.animate().scaleY(1.5f);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        canvas.setTranslationY(32);
+        canvas.setAlpha(0.5f);
+        canvas.animate().translationY(-32);
+        canvas.animate().alpha(1f);
+        barMaxHeight = bars.get(0).getHeight();
+        drawBars(null);
     }
 
     private class MnistPost extends AsyncTask<Bitmap, Integer, float[]> {
@@ -143,7 +180,6 @@ public class MnistActivity extends AppCompatActivity {
             Bitmap resized = Bitmap.createScaledBitmap(bitmap, 27, 27, true);
             resized = Bitmap.createScaledBitmap(resized, 28, 28, true);
 
-            Log.v(TAG, "in background... (" + resized.getWidth() + ", " + resized.getHeight() + ")");
             int min = Integer.MIN_VALUE;
             int max = Integer.MAX_VALUE;
 
@@ -168,7 +204,6 @@ public class MnistActivity extends AppCompatActivity {
             float range = max - min;
             float oneNth = 1 / resized.getWidth() * resized.getHeight();
 
-            Log.v(TAG, "MIN/MAX: " + min + ", " + max);
             for (int y = 0; y < resized.getHeight(); y++) {
                 for (int x = 0; x < resized.getWidth(); x++, i++) {
                     int val = resized.getPixel(x, y);
@@ -179,39 +214,9 @@ public class MnistActivity extends AppCompatActivity {
                     }
                 }
             }
-            Log.v(TAG, "Normalized");
 
             return pixels;
         }
-
-//        private double[] scale(double[] values) {
-//            double[] scaled = new double[values.length];
-//            double min = 0;
-//            double max = 0;
-//
-//            for (int i = 0; i < values.length; i++) {
-//                if (values[i] > max) {
-//                    max = values[i];
-//                }
-//
-//                if (values[i] < min) {
-//                    min = values[i];
-//                }
-//            }
-//
-//            double diff = max - min;
-//            double oneNth = 1 / values.length;
-//
-//            for (int i = 0; i < values.length; i++) {
-//                if (diff == 0) {
-//                    scaled[i] = oneNth;
-//                } else {
-//                    scaled[i] = (values[i] - min) / diff;
-//                }
-//            }
-//
-//            return scaled;
-//        }
 
         @Override
         protected void onPostExecute(float[] pixels) {
@@ -219,8 +224,10 @@ public class MnistActivity extends AppCompatActivity {
             classifier.classify(pixels);
             predictionContainer.setText(Integer.toString(classifier.getPrediction()));
 //            predictionPercentContainer.setText(String.format("%.2f", classifier.getPredictionPercent()) + "%");
-//            findViewById(R.id.btn_correct).setVisibility(View.VISIBLE);
-//            findViewById(R.id.btn_wrong).setVisibility(View.VISIBLE);
+            btnCorrect.setVisibility(View.VISIBLE);
+            btnCorrect.setAlpha(1f);
+            btnWrong.setVisibility(View.VISIBLE);
+            btnWrong.setAlpha(1f);
             drawBars(classifier.getPercentages());
 //            JSONObject payload;
 //

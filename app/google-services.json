@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "48391244372",
+    "firebase_url": "https://growing-mnist.firebaseio.com",
+    "project_id": "growing-mnist",
+    "storage_bucket": "growing-mnist.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:48391244372:android:c954b4bd37757200",
+        "android_client_info": {
+          "package_name": "mnist.ai.formigone.com.mnistapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "48391244372-720gm9f762so492706qii3i0bcoqe120.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvwB7JpdDQkdP2EBk_Al6jUX5xayVFysw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
