@@ -13,11 +13,13 @@ import mnist.ai.formigone.com.mnistapp.activities.MnistActivity;
 public class MnistClassifier {
     private TensorFlowInferenceInterface graphDef;
     private float[] percentages;
+    private float[] rawPercentages;
     private int prediction;
 
     public MnistClassifier(AssetManager assets, String graphDef) {
         this.graphDef = new TensorFlowInferenceInterface(assets, graphDef);
         percentages = new float[10];
+        rawPercentages = new float[10];
     }
 
     public MnistClassifier classify(float[] pixels) {
@@ -25,14 +27,14 @@ public class MnistClassifier {
         graphDef.feed("dropout/Placeholder", new float[]{1f}, 1);
         graphDef.run(new String[]{"fc2/add"});
 
-        graphDef.fetch("fc2/add", percentages);
-        percentages = scale(percentages);
+        graphDef.fetch("fc2/add", rawPercentages);
+        percentages = scale(rawPercentages);
 
         return this;
     }
 
-    public float[] getPercentages() {
-        return percentages;
+    public float[] getPercentages(boolean raw) {
+        return raw ? rawPercentages : percentages;
     }
 
     public int getPrediction() {

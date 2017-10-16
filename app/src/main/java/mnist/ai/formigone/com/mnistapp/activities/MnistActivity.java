@@ -227,7 +227,7 @@ public class MnistActivity extends AppCompatActivity {
             btnCorrect.setAlpha(1f);
             btnWrong.setVisibility(View.VISIBLE);
             btnWrong.setAlpha(1f);
-            drawBars(classifier.getPercentages());
+            drawBars(classifier.getPercentages(false));
 
             JSONObject payload;
 
@@ -238,10 +238,18 @@ public class MnistActivity extends AppCompatActivity {
                     lpixels.add(pixels[i]);
                 }
 
+                float[] rawPercentages = classifier.getPercentages(true);
+                List<Float> percentages = new ArrayList<Float>();
+                for (int i = 0; i < rawPercentages.length; i++) {
+                    percentages.add(rawPercentages[i]);
+                }
+
                 payload.put("pixels", new JSONArray(lpixels));
+                payload.put("percentages", new JSONArray(percentages));
+                payload.put("prediction", classifier.getPrediction());
                 Log.v(TAG, "Saving digit");
 
-                JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, "http://76.27.18.54:668/v1", payload,
+                JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, "http://api.mnist.rodrigo-silveira.com:668/v1", payload,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
@@ -255,7 +263,7 @@ public class MnistActivity extends AppCompatActivity {
                             }
                         });
 
-                req.setRetryPolicy(new DefaultRetryPolicy(2500, 5, 1f));
+                req.setRetryPolicy(new DefaultRetryPolicy(2500, 2, 1f));
 
                 queue.add(req);
             } catch (JSONException e) {
