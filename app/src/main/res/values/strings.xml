@@ -9,4 +9,5 @@
     <string name="label_ascii_minus">-</string>
     <string name="label_ascii_plus">+</string>
     <string name="msg_invalid_action">Invalid action</string>
+    <string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"https://api.mnist.rodrigo-silveira.com:669\",\n  }\n}]</string>
 </resources>
