@@ -24,7 +24,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ClassifyReceiverActivity">
+        <activity android:name=".activities.ClassifyReceiverActivity" android:noHistory="true">
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -36,6 +36,12 @@
                     android:host="api.mnist.rodrigo-silveira.com"
                     android:port="669"
                     android:path="/classify" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="text/mnist" />
             </intent-filter>
         </activity>
     </application>

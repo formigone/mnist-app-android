@@ -33,6 +33,7 @@ import java.util.List;
 
 import mnist.ai.formigone.com.mnistapp.R;
 import mnist.ai.formigone.com.mnistapp.classifiers.MnistClassifier;
+import mnist.ai.formigone.com.mnistapp.repositories.DigitRepository;
 import mnist.ai.formigone.com.mnistapp.views.CanvasView;
 
 public class MnistActivity extends AppCompatActivity {
@@ -53,7 +54,7 @@ public class MnistActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mnist);
         queue = Volley.newRequestQueue(this);
-        classifier = new MnistClassifier(getAssets(), "mnist-20171007.pb");
+        classifier = new MnistClassifier(getAssets(), MnistClassifier.MODEL_FILE);
         tracker = FirebaseAnalytics.getInstance(this);
         tracker.setAnalyticsCollectionEnabled(true);
 
@@ -167,6 +168,12 @@ public class MnistActivity extends AppCompatActivity {
         canvas.animate().alpha(1f);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        classifier.close();
+    }
+
     private class MnistPost extends AsyncTask<Bitmap, Integer, float[]> {
         @Override
         protected void onPreExecute() {
@@ -247,9 +254,11 @@ public class MnistActivity extends AppCompatActivity {
                 payload.put("pixels", new JSONArray(lpixels));
                 payload.put("percentages", new JSONArray(percentages));
                 payload.put("prediction", classifier.getPrediction());
+                payload.put("actual", null);
+                payload.put("model", MnistClassifier.MODEL_FILE);
                 Log.v(TAG, "Saving digit");
 
-                JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, "http://api.mnist.rodrigo-silveira.com:668/v1", payload,
+                JsonObjectRequest req = DigitRepository.save(payload,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {

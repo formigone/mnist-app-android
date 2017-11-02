@@ -1,7 +1,10 @@
 package mnist.ai.formigone.com.mnistapp.classifiers;
 
 import android.content.res.AssetManager;
+import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
 import mnist.ai.formigone.com.mnistapp.activities.MnistActivity;
@@ -11,6 +14,9 @@ import mnist.ai.formigone.com.mnistapp.activities.MnistActivity;
  */
 
 public class MnistClassifier {
+    private static final String TAG = "MnistClassifer";
+    public static final String MODEL_FILE = "mnist-20171007.pb";
+
     private TensorFlowInferenceInterface graphDef;
     private float[] percentages;
     private float[] rawPercentages;
@@ -31,6 +37,28 @@ public class MnistClassifier {
         percentages = scale(rawPercentages);
 
         return this;
+    }
+
+    public MnistClassifier classify(JSONArray pixels) {
+        float[] pix = toFloatArray(pixels);
+        return classify(pix);
+    }
+
+    public void close() {
+        graphDef.close();
+    }
+
+    private float[] toFloatArray(JSONArray list) {
+        float[] data = new float[list.length()];
+        for (int i = 0; i < list.length(); i++) {
+            try {
+                data[i] = Float.parseFloat(list.getString(i));
+            } catch (JSONException e) {
+                Log.d(TAG, "Could not convert JSONArray to float[]");
+            }
+        }
+
+        return data;
     }
 
     public float[] getPercentages(boolean raw) {
@@ -88,5 +116,18 @@ public class MnistClassifier {
         }
 
         return scaled;
+    }
+
+    public JSONArray getPercentagesAsJSONArray() {
+        JSONArray array = new JSONArray();
+        for (int i = 0; i < rawPercentages.length; i++) {
+            try {
+                array.put(i, rawPercentages[i]);
+            } catch (JSONException e) {
+                Log.v(TAG, "Could not serialize percentages");
+            }
+        }
+
+        return array;
     }
 }
